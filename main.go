@@ -6,25 +6,23 @@ import (
 	"net/http"
 )
 
-type ServeMux struct {
-	mux *http.ServeMux
-}
-
 func main() {
 	fmt.Println("Boot.Dev/Twitter Clone")
 
-	mux := NewServeMux()
+	mux := http.NewServeMux()
+	mux.Handle("/", http.FileServer(http.Dir(".")))
+
+	server := http.Server{
+		Addr:    ":8080",
+		Handler: mux,
+	}
 
 	// Start the HTTP server
 	log.Println("Starting server on :8080")
-	if err := http.ListenAndServe(":8080", mux.mux); err != nil {
+
+	err := server.ListenAndServe()
+	if err != nil {
 		log.Fatal(err)
 	}
-}
 
-// NewServeMux allocates and returns a new [ServeMux].
-func NewServeMux() *ServeMux {
-	return &ServeMux{
-		mux: http.NewServeMux(),
-	}
 }
