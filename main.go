@@ -25,13 +25,13 @@ func main() {
 		http.StripPrefix("/app", http.FileServer(http.Dir(filepathRoot))),
 	))
 
-	mux.HandleFunc("/healthz", healthzHandler)
+	mux.HandleFunc("GET /healthz", healthzHandler)
 
-	mux.HandleFunc("/metrics", func(w http.ResponseWriter, r *http.Request) {
+	mux.HandleFunc("GET /metrics", func(w http.ResponseWriter, r *http.Request) {
 		metricsHandler(w, r, &apiCfg)
 	})
 
-	mux.HandleFunc("/reset", func(w http.ResponseWriter, r *http.Request) {
+	mux.HandleFunc("POST /reset", func(w http.ResponseWriter, r *http.Request) {
 		resetHandler(w, r, &apiCfg)
 	})
 
