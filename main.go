@@ -25,13 +25,13 @@ func main() {
 		http.StripPrefix("/app", http.FileServer(http.Dir(filepathRoot))),
 	))
 
-	mux.HandleFunc("GET /healthz", healthzHandler)
+	mux.HandleFunc("GET /api/healthz", healthzHandler)
 
-	mux.HandleFunc("GET /metrics", func(w http.ResponseWriter, r *http.Request) {
+	mux.HandleFunc("GET /admin/metrics", func(w http.ResponseWriter, r *http.Request) {
 		metricsHandler(w, r, &apiCfg)
 	})
 
-	mux.HandleFunc("POST /reset", func(w http.ResponseWriter, r *http.Request) {
+	mux.HandleFunc("POST /admin/reset", func(w http.ResponseWriter, r *http.Request) {
 		resetHandler(w, r, &apiCfg)
 	})
 
@@ -64,9 +64,16 @@ func healthzHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func metricsHandler(w http.ResponseWriter, r *http.Request, cfg *apiConfig) {
-	w.Header().Set("Content-Type", "text/plain; charset=utf-8")
+	displayString := `<html>
+<body>
+<h1>Welcome, Chirpy Admin</h1>
+<p>Chirpy has been visited %d times!</p>
+</body>
+</html>`
+
+	w.Header().Set("Content-Type", "text/html; charset=utf-8")
 	w.WriteHeader(http.StatusOK)
-	w.Write([]byte(fmt.Sprintf("Hits: %d", cfg.fileserverHits.Load())))
+	w.Write([]byte(fmt.Sprintf(displayString, cfg.fileserverHits.Load())))
 }
 
 func resetHandler(w http.ResponseWriter, r *http.Request, cfg *apiConfig) {
