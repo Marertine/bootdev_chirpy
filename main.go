@@ -57,6 +57,7 @@ func main() {
 
 	// API handlers
 	mux.HandleFunc("GET /api/chirps", func(w http.ResponseWriter, r *http.Request) { handlerGetAllChirps(w, r, &apiCfg) })
+	mux.HandleFunc("GET /api/chirps/{chirpID}", func(w http.ResponseWriter, r *http.Request) { handlerGetChirpByID(w, r, &apiCfg) })
 
 	mux.HandleFunc("POST /api/chirps", func(w http.ResponseWriter, r *http.Request) { handlerCreateChirp(w, r, &apiCfg) })
 
