@@ -3,14 +3,11 @@ package main
 import (
 	"context"
 	"encoding/json"
-	"fmt"
 	"net/http"
 	"time"
 
 	"github.com/Marertine/bootdev_chirpy/internal/database"
 	"github.com/google/uuid"
-	"github.com/lib/pq"
-	//"github.com/lib/pq"
 )
 
 func handlerCreateUser(w http.ResponseWriter, r *http.Request, cfg *apiConfig) {
@@ -19,10 +16,10 @@ func handlerCreateUser(w http.ResponseWriter, r *http.Request, cfg *apiConfig) {
 	}
 
 	type returnSuccess struct {
-		Id         string `json:"id"`
-		Created_at string `json:"created_at"`
-		Updated_at string `json:"updated_at"`
-		Email      string `json:"email"`
+		Id         uuid.UUID `json:"id"`
+		Created_at time.Time `json:"created_at"`
+		Updated_at time.Time `json:"updated_at"`
+		Email      string    `json:"email"`
 	}
 
 	// Parse the request body
@@ -42,36 +39,18 @@ func handlerCreateUser(w http.ResponseWriter, r *http.Request, cfg *apiConfig) {
 		Email:     params.Email,
 	}
 
-	user, err := apiConfig.dbQueries.CreateUser(myCtx, myUserParams)
-	if err != nil {
-		// Type assertion to *pq.Error
-		if pqErr, ok := err.(*pq.Error); ok {
-			// Inspect the PostgreSQL error code
-			fmt.Println("Postgres error code:", pqErr.Code)
-			fmt.Println("Message:", pqErr.Message)
-			fmt.Println("Detail:", pqErr.Detail)
-			fmt.Println("Constraint:", pqErr.Constraint)
-
-			// Example: unique violation
-			if pqErr.Code == "23505" {
-				return fmt.Errorf("User already exists")
-			}
-		}
-		// All other errors
-		return err
-	}
-
-	user, err := cfg.dbQueries.CreateUser(context.Background(), params.Email)
+	user, err := cfg.dbQueries.CreateUser(myCtx, myUserParams)
 	if err != nil {
 		respondWithError(w, http.StatusInternalServerError, "Error creating user")
 		return
 	}
 
 	// Return the created user as JSON
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusCreated)
-	json.NewEncoder(w).Encode(user)
-
-	respondWithJSON(w, 200, returnSuccess{Valid: true, Cleaned_body: strCleaned})
+	respondWithJSON(w, 201, returnSuccess{
+		Id:         user.ID,
+		Created_at: user.CreatedAt,
+		Updated_at: user.UpdatedAt,
+		Email:      user.Email,
+	})
 
 }
