@@ -4,12 +4,16 @@ import (
 	"encoding/json"
 	"net/http"
 	"strings"
+	"time"
+
+	"github.com/Marertine/bootdev_chirpy/internal/database"
+	"github.com/google/uuid"
 )
 
 func handlerCreateChirp(w http.ResponseWriter, r *http.Request, cfg *apiConfig) {
 	type parameters struct {
-		Body    string `json:"body"`
-		User_id string `json:"user_id"`
+		Body   string    `json:"body"`
+		UserID uuid.UUID `json:"user_id"`
 	}
 
 	type returnError struct {
@@ -17,8 +21,11 @@ func handlerCreateChirp(w http.ResponseWriter, r *http.Request, cfg *apiConfig) 
 	}
 
 	type returnSuccess struct {
-		Valid        bool   `json:"valid"`
-		Cleaned_body string `json:"cleaned_body"`
+		ID        uuid.UUID `json:"id"`
+		CreatedAt time.Time `json:"created_at"`
+		UpdatedAt time.Time `json:"updated_at"`
+		Body      string    `json:"body"`
+		UserID    uuid.UUID `json:"user_id"`
 	}
 
 	decoder := json.NewDecoder(r.Body)
@@ -42,32 +49,29 @@ func handlerCreateChirp(w http.ResponseWriter, r *http.Request, cfg *apiConfig) 
 	strCleaned := sanitizeString(params.Body)
 
 	// Valid, insert into DB
-
 	myChirpParams := database.CreateChirpParams{
 		Body:   strCleaned,
 		UserID: params.UserID,
 	}
 
-	user, err := cfg.dbQueries.CreateUser(r.Context(), params.Email)
+	chirp, err := cfg.dbQueries.CreateChirp(r.Context(), myChirpParams)
 	if err != nil {
-		respondWithError(w, http.StatusInternalServerError, "Error creating user")
+		respondWithError(w, http.StatusInternalServerError, "Error creating chirp")
 		return
 	}
 
-	// Return the created user as JSON
+	// Return the created chirp as JSON
 	respondWithJSON(w, 201, returnSuccess{
-		Id:         user.ID,
-		Created_at: user.CreatedAt,
-		Updated_at: user.UpdatedAt,
-		Email:      user.Email,
+		ID:        chirp.ID,
+		CreatedAt: chirp.CreatedAt,
+		UpdatedAt: chirp.UpdatedAt,
+		Body:      chirp.Body,
+		UserID:    chirp.UserID,
 	})
-
-	respondWithJSON(w, 200, returnSuccess{Valid: true, Cleaned_body: strCleaned})
 
 }
 
 func sanitizeString(input string) string {
-
 	cleanedWords := strings.Split(input, " ")
 	badWords := map[string]struct{}{"kerfuffle": {}, "sharbert": {}, "fornax": {}}
 
