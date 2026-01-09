@@ -58,6 +58,8 @@ func main() {
 		handlerMetrics(w, r, &apiCfg)
 	})
 
+	mux.HandleFunc("POST /api/users", handlerCreateUser(&apiCfg))
+
 	mux.HandleFunc("POST /api/validate_chirp", handlerValidation)
 
 	server := http.Server{
