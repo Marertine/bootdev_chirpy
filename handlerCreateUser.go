@@ -1,12 +1,10 @@
 package main
 
 import (
-	"context"
 	"encoding/json"
 	"net/http"
 	"time"
 
-	"github.com/Marertine/bootdev_chirpy/internal/database"
 	"github.com/google/uuid"
 )
 
@@ -31,15 +29,14 @@ func handlerCreateUser(w http.ResponseWriter, r *http.Request, cfg *apiConfig) {
 
 	// Create a new user in the database
 
-	myCtx := context.Background()
-	myUserParams := database.CreateUserParams{
+	/*myUserParams := database.CreateUserParams{
 		ID:        uuid.New(),
 		CreatedAt: time.Now().UTC(),
 		UpdatedAt: time.Now().UTC(),
 		Email:     params.Email,
-	}
+	}*/
 
-	user, err := cfg.dbQueries.CreateUser(myCtx, myUserParams)
+	user, err := cfg.dbQueries.CreateUser(r.Context(), params.Email)
 	if err != nil {
 		respondWithError(w, http.StatusInternalServerError, "Error creating user")
 		return
