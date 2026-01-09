@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"log"
 	"net/http"
+	"strings"
 )
 
 func handlerValidation(w http.ResponseWriter, r *http.Request) {
@@ -21,7 +22,8 @@ func handlerValidation(w http.ResponseWriter, r *http.Request) {
 	}
 
 	type returnSuccess struct {
-		Valid bool `json:"valid"`
+		Valid        bool   `json:"valid"`
+		Cleaned_body string `json:"cleaned_body"`
 	}
 
 	decoder := json.NewDecoder(r.Body)
@@ -95,7 +97,9 @@ func handlerValidation(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(200)
 		w.Write(dat)
 	*/
-	respondWithJSON(w, 200, returnSuccess{Valid: true})
+
+	strCleaned := sanitizeString(params.Body)
+	respondWithJSON(w, 200, returnSuccess{Valid: true, Cleaned_body: strCleaned})
 
 }
 
@@ -113,4 +117,31 @@ func respondWithJSON(w http.ResponseWriter, code int, payload interface{}) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(code)
 	w.Write(dat)
+}
+
+func sanitizeString(input string) string {
+
+	cleanedWords := strings.Split(input, " ")
+	//badWords := []string{"kerfuffle", "sharbert", "fornax"}
+	badWords := map[string]struct{}{"kerfuffle": {}, "sharbert": {}, "fornax": {}}
+
+	for i, word := range cleanedWords {
+		if _, found := badWords[strings.ToLower(word)]; found {
+			cleanedWords[i] = "****"
+		}
+
+		/*
+			for _, badWord := range badWords {
+				if strings.EqualFold(word, badWord) {
+					//replacement := strings.Repeat("*", len(badWord))
+					cleanedWords[i] = "****"
+				}
+			}
+		*/
+	}
+
+	strCleaned := strings.Join(cleanedWords, " ")
+
+	return strCleaned
+
 }
