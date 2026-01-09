@@ -1,23 +1,15 @@
 package main
 
-/*
-
 import (
 	"encoding/json"
-	"log"
 	"net/http"
 	"strings"
 )
 
-
-func handlerValidation(w http.ResponseWriter, r *http.Request) {
+func handlerCreateChirp(w http.ResponseWriter, r *http.Request, cfg *apiConfig) {
 	type parameters struct {
-		Body string `json:"body"`
-	}
-
-	type returnVals struct {
-	    CreatedAt time.Time `json:"created_at"`
-	    ID int `json:"id"`
+		Body    string `json:"body"`
+		User_id string `json:"user_id"`
 	}
 
 	type returnError struct {
@@ -48,24 +40,30 @@ func handlerValidation(w http.ResponseWriter, r *http.Request) {
 	}
 
 	strCleaned := sanitizeString(params.Body)
-	respondWithJSON(w, 200, returnSuccess{Valid: true, Cleaned_body: strCleaned})
 
-}
+	// Valid, insert into DB
 
-func respondWithError(w http.ResponseWriter, code int, msg string) {
-	respondWithJSON(w, code, map[string]string{"error": msg})
-}
+	myChirpParams := database.CreateChirpParams{
+		Body:   strCleaned,
+		UserID: params.UserID,
+	}
 
-func respondWithJSON(w http.ResponseWriter, code int, payload interface{}) {
-	dat, err := json.Marshal(payload)
+	user, err := cfg.dbQueries.CreateUser(r.Context(), params.Email)
 	if err != nil {
-		log.Printf("Error marshalling JSON: %s", err)
-		w.WriteHeader(500)
+		respondWithError(w, http.StatusInternalServerError, "Error creating user")
 		return
 	}
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(code)
-	w.Write(dat)
+
+	// Return the created user as JSON
+	respondWithJSON(w, 201, returnSuccess{
+		Id:         user.ID,
+		Created_at: user.CreatedAt,
+		Updated_at: user.UpdatedAt,
+		Email:      user.Email,
+	})
+
+	respondWithJSON(w, 200, returnSuccess{Valid: true, Cleaned_body: strCleaned})
+
 }
 
 func sanitizeString(input string) string {
@@ -84,5 +82,3 @@ func sanitizeString(input string) string {
 	return strCleaned
 
 }
-
-*/
