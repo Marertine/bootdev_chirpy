@@ -35,19 +35,13 @@ func (q *Queries) CreateChirp(ctx context.Context, arg CreateChirpParams) (Chirp
 	return i, err
 }
 
-const getChirps = `-- name: GetChirps :many
+const getAllChirps = `-- name: GetAllChirps :many
 SELECT id, created_at, updated_at, body, user_id FROM chirps
-ORDER BY created_at DESC
-LIMIT $1 OFFSET $2
+ORDER BY created_at
 `
 
-type GetChirpsParams struct {
-	Limit  int32
-	Offset int32
-}
-
-func (q *Queries) GetChirps(ctx context.Context, arg GetChirpsParams) ([]Chirp, error) {
-	rows, err := q.db.QueryContext(ctx, getChirps, arg.Limit, arg.Offset)
+func (q *Queries) GetAllChirps(ctx context.Context) ([]Chirp, error) {
+	rows, err := q.db.QueryContext(ctx, getAllChirps)
 	if err != nil {
 		return nil, err
 	}

@@ -46,9 +46,9 @@ func main() {
 	mux := http.NewServeMux()
 
 	// Admin handlers
-	mux.HandleFunc("POST /admin/reset", func(w http.ResponseWriter, r *http.Request) {
-		handlerReset(w, r, &apiCfg)
-	})
+	mux.HandleFunc("GET /admin/metrics", func(w http.ResponseWriter, r *http.Request) { handlerMetrics(w, r, &apiCfg) })
+
+	mux.HandleFunc("POST /admin/reset", func(w http.ResponseWriter, r *http.Request) { handlerReset(w, r, &apiCfg) })
 
 	// Application handlers
 	mux.Handle("/app/", apiCfg.middlewareMetricsInc(
@@ -56,13 +56,13 @@ func main() {
 	))
 
 	// API handlers
-	mux.HandleFunc("GET /api/healthz", handlerHealthz)
-
-	mux.HandleFunc("GET /admin/metrics", func(w http.ResponseWriter, r *http.Request) { handlerMetrics(w, r, &apiCfg) })
-
-	mux.HandleFunc("POST /api/users", func(w http.ResponseWriter, r *http.Request) { handlerCreateUser(w, r, &apiCfg) })
+	mux.HandleFunc("GET /api/chirps", func(w http.ResponseWriter, r *http.Request) { handlerGetAllChirps(w, r, &apiCfg) })
 
 	mux.HandleFunc("POST /api/chirps", func(w http.ResponseWriter, r *http.Request) { handlerCreateChirp(w, r, &apiCfg) })
+
+	mux.HandleFunc("GET /api/healthz", handlerHealthz)
+
+	mux.HandleFunc("POST /api/users", func(w http.ResponseWriter, r *http.Request) { handlerCreateUser(w, r, &apiCfg) })
 
 	server := http.Server{
 		Addr:    ":8080",
