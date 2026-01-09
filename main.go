@@ -1,21 +1,41 @@
 package main
 
 import (
+	"database/sql"
 	"fmt"
 	"log"
 	"net/http"
+	"os"
 	"sync/atomic"
+
+	//"github.com/google/uuid"
+	//"github.com/Marertine/bootdev_chirpy/internal/config"
+	//"github.com/Marertine/bootdev_chirpy/internal/database"
+	"github.com/Marertine/bootdev_chirpy/internal/database"
+	"github.com/joho/godotenv"
+	_ "github.com/lib/pq"
 )
 
 type apiConfig struct {
 	fileserverHits atomic.Int32
+	dbQueries      *database.Queries
 }
 
 func main() {
 	fmt.Println("Boot.Dev/Twitter Clone")
 
+	godotenv.Load()
+	dbURL := os.Getenv("DB_URL")
+	db, err := sql.Open("postgres", dbURL)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer db.Close()
+	dbQueries := database.New(db)
+
 	apiCfg := apiConfig{
 		fileserverHits: atomic.Int32{},
+		dbQueries:      dbQueries,
 	}
 
 	filepathRoot := "."
@@ -48,7 +68,7 @@ func main() {
 	// Start the HTTP server
 	log.Println("Starting server on :8080")
 
-	err := server.ListenAndServe()
+	err = server.ListenAndServe()
 	if err != nil {
 		log.Fatal(err)
 	}
