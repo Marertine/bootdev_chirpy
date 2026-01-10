@@ -5,7 +5,8 @@ import (
 	"net/http"
 	"time"
 
-	//"github.com/Marertine/bootdev_chirpy/internal/auth"
+	"github.com/Marertine/bootdev_chirpy/internal/auth"
+	"github.com/Marertine/bootdev_chirpy/internal/database"
 	"github.com/google/uuid"
 )
 
@@ -30,15 +31,21 @@ func handlerCreateUser(w http.ResponseWriter, r *http.Request, cfg *apiConfig) {
 	}
 
 	// Hash the password
-	hashedPassword, err := HashPassword(params.Password)
+	hashedPassword, err := auth.HashPassword(params.Password)
 	if err != nil {
 		respondWithError(w, http.StatusInternalServerError, "Error hashing password")
 		return
 	}
 	params.Password = hashedPassword
 
+	// Valid, insert into DB
+	myUserParams := database.CreateUserParams{
+		HashedPassword: params.Password,
+		Email:          params.Email,
+	}
+
 	// Create a new user in the database
-	user, err := cfg.dbQueries.CreateUser(r.Context(), params.Password, params.Email)
+	user, err := cfg.dbQueries.CreateUser(r.Context(), myUserParams)
 	if err != nil {
 		respondWithError(w, http.StatusInternalServerError, "Error creating user")
 		return

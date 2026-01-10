@@ -1,1 +1,1 @@
-GET http://localhost:8080/api/chirps
+POST http://localhost:8080/admin/reset
