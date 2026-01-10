@@ -40,8 +40,13 @@ func handlerLogin(w http.ResponseWriter, r *http.Request, cfg *apiConfig) {
 		return
 	}
 
-	_, err = auth.CheckPasswordHash(params.Password, user.HashedPassword)
+	match, err := auth.CheckPasswordHash(params.Password, user.HashedPassword)
 	if err != nil {
+		respondWithError(w, 401, "Incorrect email or password")
+		return
+	}
+
+	if match != true {
 		respondWithError(w, 401, "Incorrect email or password")
 		return
 	}
