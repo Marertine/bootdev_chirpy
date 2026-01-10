@@ -5,12 +5,14 @@ import (
 	"net/http"
 	"time"
 
+	//"github.com/Marertine/bootdev_chirpy/internal/auth"
 	"github.com/google/uuid"
 )
 
 func handlerCreateUser(w http.ResponseWriter, r *http.Request, cfg *apiConfig) {
 	type parameters struct {
-		Email string `json:"email"`
+		Password string `json:"password"`
+		Email    string `json:"email"`
 	}
 
 	type returnSuccess struct {
@@ -27,8 +29,16 @@ func handlerCreateUser(w http.ResponseWriter, r *http.Request, cfg *apiConfig) {
 		return
 	}
 
+	// Hash the password
+	hashedPassword, err := HashPassword(params.Password)
+	if err != nil {
+		respondWithError(w, http.StatusInternalServerError, "Error hashing password")
+		return
+	}
+	params.Password = hashedPassword
+
 	// Create a new user in the database
-	user, err := cfg.dbQueries.CreateUser(r.Context(), params.Email)
+	user, err := cfg.dbQueries.CreateUser(r.Context(), params.Password, params.Email)
 	if err != nil {
 		respondWithError(w, http.StatusInternalServerError, "Error creating user")
 		return

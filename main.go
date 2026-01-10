@@ -8,9 +8,6 @@ import (
 	"os"
 	"sync/atomic"
 
-	//"github.com/google/uuid"
-	//"github.com/Marertine/bootdev_chirpy/internal/config"
-	//"github.com/Marertine/bootdev_chirpy/internal/database"
 	"github.com/Marertine/bootdev_chirpy/internal/database"
 	"github.com/joho/godotenv"
 	_ "github.com/lib/pq"
@@ -57,6 +54,7 @@ func main() {
 
 	// API handlers
 	mux.HandleFunc("GET /api/chirps", func(w http.ResponseWriter, r *http.Request) { handlerGetAllChirps(w, r, &apiCfg) })
+
 	mux.HandleFunc("GET /api/chirps/{chirpID}", func(w http.ResponseWriter, r *http.Request) { handlerGetChirpByID(w, r, &apiCfg) })
 
 	mux.HandleFunc("POST /api/chirps", func(w http.ResponseWriter, r *http.Request) { handlerCreateChirp(w, r, &apiCfg) })
