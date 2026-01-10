@@ -1,6 +1,6 @@
 -- name: CreateUser :one
-INSERT INTO users (email)
-VALUES ($1)
+INSERT INTO users (hashed_password, email)
+VALUES ($1, $2)
 RETURNING *;
 
 -- name: DeleteAllUsers :exec
