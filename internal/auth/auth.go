@@ -2,6 +2,7 @@ package auth
 
 import (
 	"errors"
+	"net/http"
 	"time"
 
 	"github.com/google/uuid"
@@ -73,4 +74,15 @@ func ValidateJWT(tokenString string, tokenSecret string) (uuid.UUID, error) {
 		return uuid.Nil, err
 	}
 	return userID, nil
+}
+
+func GetBearerToken(headers http.Header) (string, error) {
+	authHeader := headers.Get("Authorization")
+	if authHeader == "" {
+		return "", errors.New("authorization header missing")
+	}
+	if len(authHeader) < 7 || authHeader[:7] != "Bearer " {
+		return "", errors.New("invalid authorization header format")
+	}
+	return authHeader[7:], nil
 }

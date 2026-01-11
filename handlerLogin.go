@@ -11,12 +11,9 @@ import (
 
 func handlerLogin(w http.ResponseWriter, r *http.Request, cfg *apiConfig) {
 	type parameters struct {
-		Password string `json:"password"`
-		Email    string `json:"email"`
-	}
-
-	type returnError struct {
-		Error string `json:"error"`
+		Password           string `json:"password"`
+		Email              string `json:"email"`
+		Expires_in_seconds int    `json:"expires_in_seconds"`
 	}
 
 	type returnSuccess struct {
@@ -24,6 +21,7 @@ func handlerLogin(w http.ResponseWriter, r *http.Request, cfg *apiConfig) {
 		Created_at time.Time `json:"created_at"`
 		Updated_at time.Time `json:"updated_at"`
 		Email      string    `json:"email"`
+		Token      string    `json:"token"`
 	}
 
 	decoder := json.NewDecoder(r.Body)
@@ -51,12 +49,24 @@ func handlerLogin(w http.ResponseWriter, r *http.Request, cfg *apiConfig) {
 		return
 	}
 
+	expiresIn := time.Duration(3600) * time.Second
+	expires_in_seconds := time.Duration(params.Expires_in_seconds) * time.Second
+	if expires_in_seconds > 0 && expires_in_seconds < expiresIn {
+		expiresIn = expires_in_seconds
+	}
+
+	token, err := auth.MakeJWT(user.ID, cfg.secret, expiresIn)
+	if err != nil {
+		respondWithError(w, 500, "Something went wrong")
+		return
+	}
+
 	// Return the user as JSON
 	respondWithJSON(w, 200, returnSuccess{
 		Id:         user.ID,
 		Created_at: user.CreatedAt,
 		Updated_at: user.UpdatedAt,
 		Email:      user.Email,
+		Token:      token,
 	})
-
 }

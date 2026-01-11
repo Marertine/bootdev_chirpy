@@ -6,18 +6,14 @@ import (
 	"strings"
 	"time"
 
+	"github.com/Marertine/bootdev_chirpy/internal/auth"
 	"github.com/Marertine/bootdev_chirpy/internal/database"
 	"github.com/google/uuid"
 )
 
 func handlerCreateChirp(w http.ResponseWriter, r *http.Request, cfg *apiConfig) {
 	type parameters struct {
-		Body   string    `json:"body"`
-		UserID uuid.UUID `json:"user_id"`
-	}
-
-	type returnError struct {
-		Error string `json:"error"`
+		Body string `json:"body"`
 	}
 
 	type returnSuccess struct {
@@ -48,10 +44,24 @@ func handlerCreateChirp(w http.ResponseWriter, r *http.Request, cfg *apiConfig) 
 
 	strCleaned := sanitizeString(params.Body)
 
+	// Test with GetBearerToken to verify user identity
+	token, err := auth.GetBearerToken(r.Header)
+	if err != nil {
+		respondWithError(w, 401, "Unauthorized")
+		return
+	}
+
+	// Test with ValidateJWT to verify user identity
+	userID, err := auth.ValidateJWT(token, cfg.secret)
+	if err != nil {
+		respondWithError(w, 401, "Unauthorized")
+		return
+	}
+
 	// Valid, insert into DB
 	myChirpParams := database.CreateChirpParams{
 		Body:   strCleaned,
-		UserID: params.UserID,
+		UserID: userID,
 	}
 
 	chirp, err := cfg.dbQueries.CreateChirp(r.Context(), myChirpParams)
