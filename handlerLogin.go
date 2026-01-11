@@ -11,17 +11,18 @@ import (
 
 func handlerLogin(w http.ResponseWriter, r *http.Request, cfg *apiConfig) {
 	type parameters struct {
-		Password           string `json:"password"`
-		Email              string `json:"email"`
-		Expires_in_seconds int    `json:"expires_in_seconds"`
+		Password string `json:"password"`
+		Email    string `json:"email"`
 	}
 
 	type returnSuccess struct {
-		Id         uuid.UUID `json:"id"`
-		Created_at time.Time `json:"created_at"`
-		Updated_at time.Time `json:"updated_at"`
-		Email      string    `json:"email"`
-		Token      string    `json:"token"`
+		Id            uuid.UUID `json:"id"`
+		Created_at    time.Time `json:"created_at"`
+		Updated_at    time.Time `json:"updated_at"`
+		Email         string    `json:"email"`
+		Token         string    `json:"token"`
+		Refresh_token string    `json:"refresh_token"`
+		//Access_token  string `json:"access_token"`
 	}
 
 	decoder := json.NewDecoder(r.Body)
@@ -49,13 +50,23 @@ func handlerLogin(w http.ResponseWriter, r *http.Request, cfg *apiConfig) {
 		return
 	}
 
-	expiresIn := time.Duration(3600) * time.Second
-	expires_in_seconds := time.Duration(params.Expires_in_seconds) * time.Second
-	if expires_in_seconds > 0 && expires_in_seconds < expiresIn {
-		expiresIn = expires_in_seconds
+	token, err := auth.MakeJWT(user.ID, cfg.secret, time.Duration(1)*time.Hour)
+	if err != nil {
+		respondWithError(w, 500, "Something went wrong")
+		return
 	}
 
-	token, err := auth.MakeJWT(user.ID, cfg.secret, expiresIn)
+	refresh_token, err := auth.MakeRefreshToken()
+	if err != nil {
+		respondWithError(w, 500, "Something went wrong")
+		return
+	}
+
+	err = cfg.dbQueries.CreateRefreshToken(r.Context(), auth.CreateRefreshTokenParams{
+		Token:     refresh_token,
+		UserID:    user.ID,
+		ExpiresAt: time.Now().Add(time.Duration(60*24) * time.Hour), // 60 days
+	})
 	if err != nil {
 		respondWithError(w, 500, "Something went wrong")
 		return
@@ -63,10 +74,11 @@ func handlerLogin(w http.ResponseWriter, r *http.Request, cfg *apiConfig) {
 
 	// Return the user as JSON
 	respondWithJSON(w, 200, returnSuccess{
-		Id:         user.ID,
-		Created_at: user.CreatedAt,
-		Updated_at: user.UpdatedAt,
-		Email:      user.Email,
-		Token:      token,
+		Id:            user.ID,
+		Created_at:    user.CreatedAt,
+		Updated_at:    user.UpdatedAt,
+		Email:         user.Email,
+		Token:         token,
+		Refresh_token: refresh_token,
 	})
 }

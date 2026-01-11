@@ -66,6 +66,8 @@ func main() {
 
 	mux.HandleFunc("GET /api/healthz", handlerHealthz)
 
+	mux.HandleFunc("POST /api/refresh", func(w http.ResponseWriter, r *http.Request) { handlerRefresh(w, r, &apiCfg) })
+
 	mux.HandleFunc("POST /api/users", func(w http.ResponseWriter, r *http.Request) { handlerCreateUser(w, r, &apiCfg) })
 
 	server := http.Server{
