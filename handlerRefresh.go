@@ -21,7 +21,7 @@ func handlerRefresh(w http.ResponseWriter, r *http.Request, cfg *apiConfig) {
 	}
 
 	//GetUserFromRefreshToken to obtain user identity
-	database_token, err := auth.GetUserFromRefreshToken(r.Context(), refresh_token, cfg.dbQueries)
+	database_token, err := cfg.dbQueries.GetUserFromRefreshToken(r.Context(), refresh_token)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			respondWithError(w, 401, "Unauthorized")

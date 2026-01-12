@@ -6,22 +6,19 @@ import (
 	"time"
 
 	"github.com/Marertine/bootdev_chirpy/internal/auth"
+	"github.com/Marertine/bootdev_chirpy/internal/database"
 )
 
 func handlerRevoke(w http.ResponseWriter, r *http.Request, cfg *apiConfig) {
-	type returnSuccess struct {
-		Token string `json:"token"`
-	}
-
-	// Test with GetRefreshToken to verify token still authorised
+	// Use GetRefreshToken to have the needed parameters to revoke its access
 	refresh_token, err := auth.GetRefreshToken(r.Header)
 	if err != nil {
 		respondWithError(w, 401, "Unauthorized")
 		return
 	}
 
-	//GetUserFromRefreshToken to verify user identity
-	database_token, err := auth.GetUserFromRefreshToken(r.Context(), refresh_token, cfg.dbQueries)
+	//Use GetUserFromRefreshToken to have the needed parameters to revoke its access
+	database_token, err := cfg.dbQueries.GetUserFromRefreshToken(r.Context(), refresh_token)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			respondWithError(w, 401, "Unauthorized")
@@ -35,14 +32,18 @@ func handlerRevoke(w http.ResponseWriter, r *http.Request, cfg *apiConfig) {
 		return
 	}
 
-	token, err := auth.MakeJWT(database_token.UserID, cfg.secret, time.Duration(1)*time.Hour)
+	// Don't care about validity, just revoke it
+	myTokenParams := database.RevokeTokenParams{
+		Token:     database_token.Token,
+		RevokedAt: sql.NullTime{Time: time.Now().UTC(), Valid: true},
+	}
+
+	err = cfg.dbQueries.RevokeToken(r.Context(), myTokenParams)
 	if err != nil {
 		respondWithError(w, 500, "Something went wrong")
 		return
 	}
 
-	// Return the token as JSON
-	respondWithJSON(w, 200, returnSuccess{
-		Token: token,
-	})
+	// Return a 204 No Content status code
+	respondWithJSON(w, 204, "")
 }
