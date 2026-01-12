@@ -1,7 +1,6 @@
 package main
 
 import (
-	"database/sql"
 	"encoding/json"
 	"net/http"
 	"time"
@@ -24,21 +23,16 @@ func handlerUpdateUser(w http.ResponseWriter, r *http.Request, cfg *apiConfig) {
 		Email      string    `json:"email"`
 	}
 
-	// Test with GetRefreshToken to verify token still authorised
-	refresh_token, err := auth.GetBearerToken(r.Header)
+	// Test with GetBearerToken to verify token still authorised
+	token, err := auth.GetBearerToken(r.Header)
 	if err != nil {
 		respondWithError(w, 401, "Unauthorized")
 		return
 	}
 
-	//GetUserFromRefreshToken to obtain user identity
-	database_token, err := cfg.dbQueries.GetUserFromRefreshToken(r.Context(), refresh_token)
+	userID, err := auth.ValidateJWT(token, cfg.secret)
 	if err != nil {
-		if err == sql.ErrNoRows {
-			respondWithError(w, 401, "Unauthorized")
-			return
-		}
-		respondWithError(w, 500, "Something went wrong")
+		respondWithError(w, 401, "Unauthorized")
 		return
 	}
 
@@ -61,7 +55,7 @@ func handlerUpdateUser(w http.ResponseWriter, r *http.Request, cfg *apiConfig) {
 
 	// Valid, update user details in the database
 	myUpdateParams := database.UpdateUserParams{
-		ID:             database_token.ID,
+		ID:             userID,
 		HashedPassword: params.Password,
 		Email:          params.Email,
 		UpdatedAt:      time.Now().UTC(),
@@ -74,8 +68,8 @@ func handlerUpdateUser(w http.ResponseWriter, r *http.Request, cfg *apiConfig) {
 		return
 	}
 
-	// Return the created user as JSON
-	respondWithJSON(w, 201, returnSuccess{
+	// Return the updated user as JSON
+	respondWithJSON(w, 200, returnSuccess{
 		Id:         user.ID,
 		Created_at: user.CreatedAt,
 		Updated_at: user.UpdatedAt,

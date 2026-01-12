@@ -13,7 +13,7 @@ func handlerRefresh(w http.ResponseWriter, r *http.Request, cfg *apiConfig) {
 		Token string `json:"token"`
 	}
 
-	// Test with GetRefreshToken to verify token still authorised
+	// Test with GetBearerToken to verify token still authorised
 	refresh_token, err := auth.GetBearerToken(r.Header)
 	if err != nil {
 		respondWithError(w, 401, "Unauthorized")
