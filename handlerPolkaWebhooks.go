@@ -7,8 +7,6 @@ import (
 
 	"github.com/Marertine/bootdev_chirpy/internal/database"
 	"github.com/google/uuid"
-	//"time"
-	//"github.com/Marertine/bootdev_chirpy/internal/auth"
 )
 
 func handlerPolkaWebhooks(w http.ResponseWriter, r *http.Request, cfg *apiConfig) {
@@ -19,10 +17,22 @@ func handlerPolkaWebhooks(w http.ResponseWriter, r *http.Request, cfg *apiConfig
 		}
 	}
 
+	// Test with getAPIKey to verify APIkey is correct
+	request_apikey, err := auth.getAPIKey(r.Header)
+	if err != nil {
+		respondWithError(w, 401, "Unauthorized")
+		return
+	}
+
+	if request_apikey != cfg.polkaAPIKey {
+		respondWithError(w, 401, "Unauthorized")
+		return
+	}
+
 	// Parse the request body
 	decoder := json.NewDecoder(r.Body)
 	params := parameters{}
-	err := decoder.Decode(&params)
+	err = decoder.Decode(&params)
 	if err != nil {
 		respondWithError(w, 500, "Something went wrong")
 		return
