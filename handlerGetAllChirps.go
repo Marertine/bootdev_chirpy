@@ -4,6 +4,7 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/Marertine/bootdev_chirpy/internal/database"
 	"github.com/google/uuid"
 )
 
@@ -20,10 +21,27 @@ func handlerGetAllChirps(w http.ResponseWriter, r *http.Request, cfg *apiConfig)
 		UserID    uuid.UUID `json:"user_id"`
 	}
 
-	chirps, err := cfg.dbQueries.GetAllChirps(r.Context())
-	if err != nil {
-		respondWithError(w, http.StatusInternalServerError, "Error fetching chirps")
-		return
+	s := r.URL.Query().Get("author_id")
+	var chirps []database.Chirp
+	var err error
+
+	if s != "" {
+		authorID, err := uuid.Parse(s)
+		if err != nil {
+			respondWithError(w, http.StatusBadRequest, "Invalid author_id")
+			return
+		}
+		chirps, err = cfg.dbQueries.GetAllChirpsByAuthor(r.Context(), authorID)
+		if err != nil {
+			respondWithError(w, http.StatusInternalServerError, "Error fetching chirps")
+			return
+		}
+	} else {
+		chirps, err = cfg.dbQueries.GetAllChirps(r.Context())
+		if err != nil {
+			respondWithError(w, http.StatusInternalServerError, "Error fetching chirps")
+			return
+		}
 	}
 
 	var response []returnSuccess
