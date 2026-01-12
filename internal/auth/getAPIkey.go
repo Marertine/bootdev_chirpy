@@ -5,7 +5,7 @@ import (
 	"net/http"
 )
 
-func getAPIKey(headers http.Header) (string, error) {
+func GetAPIKey(headers http.Header) (string, error) {
 
 	authHeader := headers.Get("Authorization")
 	if authHeader == "" {
