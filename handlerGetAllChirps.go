@@ -2,6 +2,7 @@ package main
 
 import (
 	"net/http"
+	"sort"
 	"time"
 
 	"github.com/Marertine/bootdev_chirpy/internal/database"
@@ -42,6 +43,16 @@ func handlerGetAllChirps(w http.ResponseWriter, r *http.Request, cfg *apiConfig)
 			respondWithError(w, http.StatusInternalServerError, "Error fetching chirps")
 			return
 		}
+	}
+
+	if r.URL.Query().Get("sort") == "desc" {
+		sort.Slice(chirps, func(i, j int) bool {
+			return chirps[i].CreatedAt.After(chirps[j].CreatedAt)
+		})
+	} else {
+		sort.Slice(chirps, func(i, j int) bool {
+			return chirps[i].CreatedAt.Before(chirps[j].CreatedAt)
+		})
 	}
 
 	var response []returnSuccess
