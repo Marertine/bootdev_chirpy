@@ -72,6 +72,8 @@ func main() {
 
 	mux.HandleFunc("POST /api/users", func(w http.ResponseWriter, r *http.Request) { handlerCreateUser(w, r, &apiCfg) })
 
+	mux.HandleFunc("PUT /api/users", func(w http.ResponseWriter, r *http.Request) { handlerUpdateUser(w, r, &apiCfg) })
+
 	server := http.Server{
 		Addr:    ":8080",
 		Handler: mux,

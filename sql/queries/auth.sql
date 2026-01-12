@@ -4,8 +4,12 @@ VALUES ($1, $2, $3, NULL)
 RETURNING *;
 
 -- name: GetUserFromRefreshToken :one
-SELECT * FROM refresh_tokens
-WHERE token = $1 AND revoked_at IS NULL AND expires_at > NOW();
+SELECT users.* FROM users
+JOIN refresh_tokens ON users.id = refresh_tokens.user_id
+WHERE refresh_tokens.token = $1
+AND revoked_at IS NULL
+AND expires_at > NOW();
+
 
 -- name: RevokeToken :exec
 UPDATE refresh_tokens
