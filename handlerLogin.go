@@ -23,6 +23,7 @@ func handlerLogin(w http.ResponseWriter, r *http.Request, cfg *apiConfig) {
 		Email         string    `json:"email"`
 		Token         string    `json:"token"`
 		Refresh_token string    `json:"refresh_token"`
+		Is_Chirpy_Red bool      `json:"is_chirpy_red"`
 		//Access_token  string `json:"access_token"`
 	}
 
@@ -81,5 +82,6 @@ func handlerLogin(w http.ResponseWriter, r *http.Request, cfg *apiConfig) {
 		Email:         user.Email,
 		Token:         token,
 		Refresh_token: refresh_token,
+		Is_Chirpy_Red: user.IsChirpyRed,
 	})
 }

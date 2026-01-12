@@ -17,10 +17,11 @@ func handlerUpdateUser(w http.ResponseWriter, r *http.Request, cfg *apiConfig) {
 	}
 
 	type returnSuccess struct {
-		Id         uuid.UUID `json:"id"`
-		Created_at time.Time `json:"created_at"`
-		Updated_at time.Time `json:"updated_at"`
-		Email      string    `json:"email"`
+		Id            uuid.UUID `json:"id"`
+		Created_at    time.Time `json:"created_at"`
+		Updated_at    time.Time `json:"updated_at"`
+		Email         string    `json:"email"`
+		Is_Chirpy_Red bool      `json:"is_chirpy_red"`
 	}
 
 	// Test with GetBearerToken to verify token still authorised
@@ -70,10 +71,11 @@ func handlerUpdateUser(w http.ResponseWriter, r *http.Request, cfg *apiConfig) {
 
 	// Return the updated user as JSON
 	respondWithJSON(w, 200, returnSuccess{
-		Id:         user.ID,
-		Created_at: user.CreatedAt,
-		Updated_at: user.UpdatedAt,
-		Email:      user.Email,
+		Id:            user.ID,
+		Created_at:    user.CreatedAt,
+		Updated_at:    user.UpdatedAt,
+		Email:         user.Email,
+		Is_Chirpy_Red: user.IsChirpyRed,
 	})
 
 }

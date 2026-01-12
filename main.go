@@ -68,6 +68,8 @@ func main() {
 
 	mux.HandleFunc("GET /api/healthz", handlerHealthz)
 
+	mux.HandleFunc("POST /api/polka/webhooks", func(w http.ResponseWriter, r *http.Request) { handlerPolkaWebhooks(w, r, &apiCfg) })
+
 	mux.HandleFunc("POST /api/refresh", func(w http.ResponseWriter, r *http.Request) { handlerRefresh(w, r, &apiCfg) })
 
 	mux.HandleFunc("POST /api/revoke", func(w http.ResponseWriter, r *http.Request) { handlerRevoke(w, r, &apiCfg) })
