@@ -62,7 +62,7 @@ func handlerLogin(w http.ResponseWriter, r *http.Request, cfg *apiConfig) {
 		return
 	}
 
-	err = cfg.dbQueries.CreateRefreshToken(r.Context(), auth.CreateRefreshTokenParams{
+	_, err = cfg.dbQueries.CreateRefreshToken(r.Context(), auth.CreateRefreshTokenParams{
 		Token:     refresh_token,
 		UserID:    user.ID,
 		ExpiresAt: time.Now().Add(time.Duration(60*24) * time.Hour), // 60 days
