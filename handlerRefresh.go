@@ -14,7 +14,8 @@ func handlerRefresh(w http.ResponseWriter, r *http.Request, cfg *apiConfig) {
 	}
 
 	// Test with GetRefreshToken to verify token still authorised
-	refresh_token, err := auth.GetRefreshToken(r.Header)
+	//refresh_token, err := auth.GetRefreshToken(r.Header)
+	refresh_token, err := auth.GetBearerToken(r.Header)
 	if err != nil {
 		respondWithError(w, 401, "Unauthorized")
 		return
@@ -30,10 +31,11 @@ func handlerRefresh(w http.ResponseWriter, r *http.Request, cfg *apiConfig) {
 		respondWithError(w, 500, "Something went wrong")
 		return
 	}
-	if database_token.ExpiresAt.Before(time.Now().UTC()) {
+	/*if database_token.ExpiresAt.Before(time.Now().UTC()) {
 		respondWithError(w, 401, "Unauthorized")
 		return
 	}
+	*/
 
 	token, err := auth.MakeJWT(database_token.UserID, cfg.secret, time.Duration(1)*time.Hour)
 	if err != nil {

@@ -11,7 +11,8 @@ import (
 
 func handlerRevoke(w http.ResponseWriter, r *http.Request, cfg *apiConfig) {
 	// Use GetRefreshToken to have the needed parameters to revoke its access
-	refresh_token, err := auth.GetRefreshToken(r.Header)
+	//refresh_token, err := auth.GetRefreshToken(r.Header)
+	refresh_token, err := auth.GetBearerToken(r.Header)
 	if err != nil {
 		respondWithError(w, 401, "Unauthorized")
 		return
@@ -27,10 +28,11 @@ func handlerRevoke(w http.ResponseWriter, r *http.Request, cfg *apiConfig) {
 		respondWithError(w, 500, "Something went wrong")
 		return
 	}
-	if database_token.ExpiresAt.Before(time.Now().UTC()) {
-		respondWithError(w, 401, "Unauthorized")
-		return
-	}
+	/*
+		if database_token.ExpiresAt.Before(time.Now().UTC()) {
+			respondWithError(w, 401, "Unauthorized")
+			return
+		}*/
 
 	// Don't care about validity, just revoke it
 	myTokenParams := database.RevokeTokenParams{

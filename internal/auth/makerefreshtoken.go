@@ -2,7 +2,7 @@ package auth
 
 import (
 	"crypto/rand"
-	"encoding/base64"
+	"encoding/hex"
 )
 
 // MakeRefreshToken generates a secure random refresh token.
@@ -18,8 +18,8 @@ func MakeRefreshToken() (string, error) {
 		return "", err
 	}
 
-	// Encode the byte slice to a base64 string
-	refreshToken := base64.URLEncoding.EncodeToString(tokenBytes)
+	// Encode the byte slice to a hex string
+	refreshToken := hex.EncodeToString(tokenBytes)
 
 	return refreshToken, nil
 }
