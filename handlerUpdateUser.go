@@ -45,7 +45,7 @@ func handlerUpdateUser(w http.ResponseWriter, r *http.Request, cfg *apiConfig) {
 	// Parse the request body
 	decoder := json.NewDecoder(r.Body)
 	params := parameters{}
-	err := decoder.Decode(&params)
+	err = decoder.Decode(&params)
 	if err != nil {
 		respondWithError(w, 500, "Something went wrong")
 		return

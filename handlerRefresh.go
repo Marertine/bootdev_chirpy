@@ -31,7 +31,7 @@ func handlerRefresh(w http.ResponseWriter, r *http.Request, cfg *apiConfig) {
 		return
 	}
 
-	token, err := auth.MakeJWT(database_token.UserID, cfg.secret, time.Duration(1)*time.Hour)
+	token, err := auth.MakeJWT(database_token.ID, cfg.secret, time.Duration(1)*time.Hour)
 	if err != nil {
 		respondWithError(w, 500, "Something went wrong")
 		return
