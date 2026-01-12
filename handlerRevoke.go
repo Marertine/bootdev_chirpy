@@ -11,41 +11,21 @@ import (
 
 func handlerRevoke(w http.ResponseWriter, r *http.Request, cfg *apiConfig) {
 	// Use GetRefreshToken to have the needed parameters to revoke its access
-	//refresh_token, err := auth.GetRefreshToken(r.Header)
 	refresh_token, err := auth.GetBearerToken(r.Header)
 	if err != nil {
-		respondWithError(w, 401, "Unauthorized")
+		respondWithError(w, http.StatusUnauthorized, "Unauthorized")
 		return
 	}
-
-	//Use GetUserFromRefreshToken to have the needed parameters to revoke its access
-	database_token, err := cfg.dbQueries.GetUserFromRefreshToken(r.Context(), refresh_token)
-	if err != nil {
-		if err == sql.ErrNoRows {
-			respondWithError(w, 401, "Unauthorized")
-			return
-		}
-		respondWithError(w, 500, "Something went wrong")
-		return
-	}
-	/*
-		if database_token.ExpiresAt.Before(time.Now().UTC()) {
-			respondWithError(w, 401, "Unauthorized")
-			return
-		}*/
 
 	// Don't care about validity, just revoke it
-	myTokenParams := database.RevokeTokenParams{
-		Token:     database_token.Token,
+	err = cfg.dbQueries.RevokeToken(r.Context(), database.RevokeTokenParams{
+		Token:     refresh_token,
 		RevokedAt: sql.NullTime{Time: time.Now().UTC(), Valid: true},
-	}
-
-	err = cfg.dbQueries.RevokeToken(r.Context(), myTokenParams)
+	})
 	if err != nil {
-		respondWithError(w, 500, "Something went wrong")
+		respondWithError(w, http.StatusInternalServerError, "Something went wrong")
 		return
 	}
-
 	// Return a 204 No Content status code
-	respondWithJSON(w, 204, "")
+	w.WriteHeader(http.StatusNoContent)
 }

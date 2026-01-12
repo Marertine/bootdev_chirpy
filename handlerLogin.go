@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/Marertine/bootdev_chirpy/internal/auth"
+	"github.com/Marertine/bootdev_chirpy/internal/database"
 	"github.com/google/uuid"
 )
 
@@ -62,7 +63,7 @@ func handlerLogin(w http.ResponseWriter, r *http.Request, cfg *apiConfig) {
 		return
 	}
 
-	_, err = cfg.dbQueries.CreateRefreshToken(r.Context(), auth.CreateRefreshTokenParams{
+	_, err = cfg.dbQueries.CreateRefreshToken(r.Context(), database.CreateRefreshTokenParams{
 		Token:     refresh_token,
 		UserID:    user.ID,
 		ExpiresAt: time.Now().Add(time.Duration(60*24) * time.Hour), // 60 days
