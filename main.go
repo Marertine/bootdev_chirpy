@@ -68,6 +68,8 @@ func main() {
 
 	mux.HandleFunc("POST /api/refresh", func(w http.ResponseWriter, r *http.Request) { handlerRefresh(w, r, &apiCfg) })
 
+	mux.HandleFunc("POST /api/revoke", func(w http.ResponseWriter, r *http.Request) { handlerRevoke(w, r, &apiCfg) })
+
 	mux.HandleFunc("POST /api/users", func(w http.ResponseWriter, r *http.Request) { handlerCreateUser(w, r, &apiCfg) })
 
 	server := http.Server{

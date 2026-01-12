@@ -7,6 +7,7 @@ package database
 
 import (
 	"context"
+	"database/sql"
 )
 
 const getUserFromRefreshToken = `-- name: GetUserFromRefreshToken :one
@@ -26,4 +27,20 @@ func (q *Queries) GetUserFromRefreshToken(ctx context.Context, token string) (Re
 		&i.RevokedAt,
 	)
 	return i, err
+}
+
+const revokeToken = `-- name: RevokeToken :exec
+UPDATE refresh_tokens
+SET revoked_at = $2, updated_at = $2
+WHERE token = $1
+`
+
+type RevokeTokenParams struct {
+	Token     string
+	RevokedAt sql.NullTime
+}
+
+func (q *Queries) RevokeToken(ctx context.Context, arg RevokeTokenParams) error {
+	_, err := q.db.ExecContext(ctx, revokeToken, arg.Token, arg.RevokedAt)
+	return err
 }

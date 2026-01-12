@@ -8,7 +8,7 @@ import (
 	"github.com/Marertine/bootdev_chirpy/internal/auth"
 )
 
-func handlerRefresh(w http.ResponseWriter, r *http.Request, cfg *apiConfig) {
+func handlerRevoke(w http.ResponseWriter, r *http.Request, cfg *apiConfig) {
 	type returnSuccess struct {
 		Token string `json:"token"`
 	}
@@ -20,7 +20,7 @@ func handlerRefresh(w http.ResponseWriter, r *http.Request, cfg *apiConfig) {
 		return
 	}
 
-	//GetUserFromRefreshToken to obtain user identity
+	//GetUserFromRefreshToken to verify user identity
 	database_token, err := auth.GetUserFromRefreshToken(r.Context(), refresh_token, cfg.dbQueries)
 	if err != nil {
 		if err == sql.ErrNoRows {
