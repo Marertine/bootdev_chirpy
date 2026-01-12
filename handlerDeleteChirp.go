@@ -1,6 +1,7 @@
 package main
 
 import (
+	"database/sql"
 	"net/http"
 
 	"github.com/Marertine/bootdev_chirpy/internal/auth"
@@ -12,13 +13,13 @@ func handlerDeleteChirp(w http.ResponseWriter, r *http.Request, cfg *apiConfig) 
 	// Test with GetBearerToken to verify token still authorised
 	token, err := auth.GetBearerToken(r.Header)
 	if err != nil {
-		respondWithError(w, 403, "Unauthorized")
+		respondWithError(w, 401, "Unauthorized")
 		return
 	}
 
-	_, err = auth.ValidateJWT(token, cfg.secret)
+	userID, err := auth.ValidateJWT(token, cfg.secret)
 	if err != nil {
-		respondWithError(w, 403, "Unauthorized")
+		respondWithError(w, 401, "Unauthorized")
 		return
 	}
 
@@ -26,6 +27,22 @@ func handlerDeleteChirp(w http.ResponseWriter, r *http.Request, cfg *apiConfig) 
 	myID, err := uuid.Parse(myidStr)
 	if err != nil {
 		respondWithError(w, 404, "Invalid chirp ID")
+		return
+	}
+
+	chirp, err := cfg.dbQueries.GetChirpByID(r.Context(), myID)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			respondWithError(w, 404, "Chirp not found")
+			return
+		}
+		respondWithError(w, 500, "Something went wrong")
+		return
+	}
+
+	// Check if the chirp belongs to the authenticated user
+	if chirp.UserID != userID {
+		respondWithError(w, 403, "Forbidden: You can only delete your own chirps")
 		return
 	}
 
